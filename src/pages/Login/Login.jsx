@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { NavLink, useNavigate } from 'react-router-dom';
 
-import { auth } from '../../services/firebase';
+import { signInWithGoogle, auth, fireStore } from '../../services/firebase';
 
 const Login = ({ addToken }) => {
   const navigate = useNavigate();
@@ -26,6 +26,28 @@ const Login = ({ addToken }) => {
         console.log(errorCode, errorMessage);
       });
   };
+
+  useLayoutEffect(() => {
+    const unsubscribe = fireStore.auth().onAuthStateChanged(user => {
+      if (user) {
+        user
+          .getIdToken()
+          .then(idToken => {
+            localStorage.setItem('token', idToken);
+            addToken();
+          })
+          .then(() => {
+            navigate('/');
+          });
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      fireStore.auth().signOut();
+    };
+    // eslint-disable-next-line
+  }, []);
 
   return (
     <div className="auth">
@@ -62,6 +84,16 @@ const Login = ({ addToken }) => {
         <div>
           <button className="btn btn-primary" onClick={onLogin}>
             Login
+          </button>
+        </div>
+
+        <div className="sosialBtns">
+          <button
+            className="btn btn-primary google-btn"
+            onClick={signInWithGoogle}
+          >
+            <img src="/google.png" alt="google icon" />
+            Sign in with Google
           </button>
         </div>
       </form>

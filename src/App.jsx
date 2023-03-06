@@ -12,7 +12,7 @@ function App() {
     if (localStorage.getItem('token')) {
       setIsAuth(true);
     }
-  }, []);
+  }, [isAuth]);
 
   const addToken = () => {
     setIsAuth(true);
